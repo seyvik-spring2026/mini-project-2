@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day Architect — Schedule Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0e0f11;
+      --surface: #16171b;
+      --surface-hover: #1e1f24;
+      --border: #2a2b31;
+      --text: #e8e6e1;
+      --text-muted: #7a7b82;
+      --accent: #c9f06b;
+      --accent-dim: rgba(201, 240, 107, 0.12);
+      --high: #ff6b6b;
+      --high-bg: rgba(255, 107, 107, 0.1);
+      --med: #fbbf24;
+      --med-bg: rgba(251, 191, 36, 0.1);
+      --low: #6bcff0;
+      --low-bg: rgba(107, 207, 240, 0.1);
+      --radius: 10px;
+      --font: 'Sora', sans-serif;
+      --mono: 'Space Mono', monospace;
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f2ed;
+      --surface: #ffffff;
+      --surface-hover: #f0efe9;
+      --border: #ddd9d0;
+      --text: #1a1a1a;
+      --text-muted: #8a8880;
+      --accent: #4a7c10;
+      --accent-dim: rgba(74, 124, 16, 0.1);
+      --high: #d93636;
+      --high-bg: rgba(217, 54, 54, 0.08);
+      --med: #b88a00;
+      --med-bg: rgba(184, 138, 0, 0.08);
+      --low: #1a8ab5;
+      --low-bg: rgba(26, 138, 181, 0.08);
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #0e0f11;
+      font-weight: 700;
+    }
+
+    .logo h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .logo h1 span {
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── LAYOUT ── */
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      max-width: 1100px;
+      margin: 0 auto;
+      min-height: calc(100vh - 79px);
+    }
+
+    .panel {
+      padding: 28px;
+    }
+
+    .panel-left {
+      border-right: 1px solid var(--border);
+    }
+
+    .panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    /* ── FORM ── */
+    .task-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .input-group label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    input, select {
+      font-family: var(--font);
+      font-size: 14px;
+      padding: 10px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    input::placeholder {
+      color: var(--text-muted);
+    }
+
+    select {
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237a7b82'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 30px;
+    }
+
+    select option {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .btn {
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0e0f11;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+    }
+
+    .btn-danger {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--high);
+    }
+
+    .btn-danger:hover {
+      background: var(--high-bg);
+      border-color: var(--high);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .form-actions .btn {
+      flex: 1;
+    }
+
+    /* ── TASK LIST ── */
+    .task-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .task-count {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: all 0.25s ease;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .task-item:hover {
+      background: var(--surface-hover);
+    }
+
+    .task-item .priority-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .priority-dot.high { background: var(--high); }
+    .priority-dot.medium { background: var(--med); }
+    .priority-dot.low { background: var(--low); }
+
+    .task-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-name {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .task-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      margin-top: 2px;
+    }
+
+    .task-delete {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      opacity: 0;
+    }
+
+    .task-item:hover .task-delete {
+      opacity: 1;
+    }
+
+    .task-delete:hover {
+      background: var(--high-bg);
+      color: var(--high);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── SCHEDULE VIEW ── */
+    .schedule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .schedule-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      flex: 1;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .schedule-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .time-block {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      animation: slideIn 0.3s ease;
+      animation-fill-mode: backwards;
+    }
+
+    .time-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      width: 60px;
+      padding-top: 12px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .time-block-content {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      border-left: 3px solid;
+      transition: transform 0.2s;
+    }
+
+    .time-block-content:hover {
+      transform: translateX(4px);
+    }
+
+    .time-block-content.high {
+      background: var(--high-bg);
+      border-color: var(--high);
+    }
+
+    .time-block-content.medium {
+      background: var(--med-bg);
+      border-color: var(--med);
+    }
+
+    .time-block-content.low {
+      background: var(--low-bg);
+      border-color: var(--low);
+    }
+
+    .time-block-content .block-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .time-block-content .block-duration {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      margin-top: 2px;
+    }
+
+    .schedule-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .schedule-empty .empty-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      opacity: 0.3;
+    }
+
+    .schedule-empty p {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .generate-hint {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ── START TIME PICKER ── */
+    .start-time-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .start-time-row label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .start-time-row input[type="time"] {
+      padding: 6px 10px;
+      font-family: var(--mono);
+      font-size: 14px;
+      flex: 0;
+    }
+
+    /* ── EXPORT TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 100;
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-left {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .input-row {
+        flex-direction: column;
+      }
+
+      .task-delete {
+        opacity: 1;
+      }
+    }
+
+    /* ── KEYBOARD SHORTCUT HINT ── */
+    .shortcut-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 12px;
+      font-family: var(--mono);
+    }
+
+    kbd {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">D</div>
+      <h1>Day Architect <span>/ schedule builder</span></h1>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="exportBtn" title="Copy schedule to clipboard">&#128203;</button>
+      <button class="icon-btn" id="themeBtn" title="Toggle theme">&#9790;</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT PANEL: Task Input -->
+    <section class="panel panel-left">
+      <div class="panel-title">Add Tasks</div>
+
+      <form class="task-form" id="taskForm">
+        <div class="input-group">
+          <label for="taskName">Task name</label>
+          <input type="text" id="taskName" placeholder="What do you need to do?" autocomplete="off">
+        </div>
+
+        <div class="input-row">
+          <div class="input-group">
+            <label for="taskDuration">Duration (min)</label>
+            <input type="number" id="taskDuration" min="5" max="480" step="5" value="30">
+          </div>
+          <div class="input-group">
+            <label for="taskPriority">Priority</label>
+            <select id="taskPriority">
+              <option value="high">High</option>
+              <option value="medium" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Add Task</button>
+          <button type="button" class="btn btn-outline" id="generateBtn">Generate Schedule</button>
+        </div>
+      </form>
+
+      <div class="task-list-header">
+        <div class="panel-title" style="margin-bottom:0">Your Tasks</div>
+        <span class="task-count" id="taskCount">0 tasks</span>
+      </div>
+
+      <div class="task-list" id="taskList">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">&#128221;</div>
+          <p>No tasks yet.<br>Add something to get started.</p>
+        </div>
+      </div>
+
+      <div class="form-actions" style="margin-top: 16px;">
+        <button class="btn btn-danger" id="clearBtn">Clear All</button>
+      </div>
+
+      <div class="shortcut-hint">
+        <kbd>Enter</kbd> add task &nbsp;&middot;&nbsp; <kbd>Ctrl+G</kbd> generate &nbsp;&middot;&nbsp; <kbd>Ctrl+E</kbd> export
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: Schedule View -->
+    <section class="panel panel-right">
+      <div class="schedule-header">
+        <div class="panel-title" style="margin-bottom:0">Your Schedule</div>
+      </div>
+
+      <div class="start-time-row">
+        <label for="startTime">Start at</label>
+        <input type="time" id="startTime" value="09:00">
+      </div>
+
+      <div class="schedule-stats" id="scheduleStats" style="display:none;">
+        <div class="stat">
+          <div class="stat-value" id="totalTasks">0</div>
+          <div class="stat-label">Tasks</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="totalHours">0h</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="endTime">--</div>
+          <div class="stat-label">Done by</div>
+        </div>
+      </div>
+
+      <div class="schedule-timeline" id="scheduleTimeline">
+        <div class="schedule-empty" id="scheduleEmpty">
+          <div class="empty-icon">&#128197;</div>
+          <p>Add tasks on the left, then<br><span class="generate-hint">Generate Schedule</span> to build your day.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast">Copied to clipboard!</div>
+
+  <script>
+    // ── STATE ──
+    let tasks = JSON.parse(localStorage.getItem('da_tasks') || '[]');
+    let schedule = JSON.parse(localStorage.getItem('da_schedule') || '[]');
+    let startTimeValue = localStorage.getItem('da_startTime') || '09:00';
+
+    // ── ELEMENTS ──
+    const taskForm = document.getElementById('taskForm');
+    const taskNameInput = document.getElementById('taskName');
+    const taskDurationInput = document.getElementById('taskDuration');
+    const taskPrioritySelect = document.getElementById('taskPriority');
+    const taskList = document.getElementById('taskList');
+    const emptyState = document.getElementById('emptyState');
+    const taskCount = document.getElementById('taskCount');
+    const generateBtn = document.getElementById('generateBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const startTimeInput = document.getElementById('startTime');
+    const scheduleTimeline = document.getElementById('scheduleTimeline');
+    const scheduleEmpty = document.getElementById('scheduleEmpty');
+    const scheduleStats = document.getElementById('scheduleStats');
+    const totalTasksEl = document.getElementById('totalTasks');
+    const totalHoursEl = document.getElementById('totalHours');
+    const endTimeEl = document.getElementById('endTime');
+    const themeBtn = document.getElementById('themeBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const toast = document.getElementById('toast');
+
+    // ── INIT ──
+    startTimeInput.value = startTimeValue;
+    if (localStorage.getItem('da_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      themeBtn.innerHTML = '&#9728;';
+    }
+    renderTasks();
+    if (schedule.length > 0) renderSchedule();
+
+    // ── INTERACTION 1: FORM SUBMISSION (Add Task) ──
+    taskForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = taskNameInput.value.trim();
+      const duration = parseInt(taskDurationInput.value);
+      const priority = taskPrioritySelect.value;
+
+      if (!name) {
+        taskNameInput.style.borderColor = 'var(--high)';
+        taskNameInput.focus();
+        setTimeout(() => taskNameInput.style.borderColor = '', 1500);
+        return;
+      }
+
+      if (!duration || duration < 5 || duration > 480) {
+        taskDurationInput.style.borderColor = 'var(--high)';
+        setTimeout(() => taskDurationInput.style.borderColor = '', 1500);
+        return;
+      }
+
+      tasks.push({
+        id: Date.now(),
+        name: name,
+        duration: duration,
+        priority: priority
+      });
+
+      save();
+      renderTasks();
+
+      // Reset form inputs
+      taskNameInput.value = '';
+      taskDurationInput.value = 30;
+      taskPrioritySelect.value = 'medium';
+      taskNameInput.focus();
+    });
+
+    // ── INTERACTION 2: BUTTON CLICKS (Delete, Generate, Clear, Theme, Export) ──
+    taskList.addEventListener('click', function(e) {
+      const deleteBtn = e.target.closest('.task-delete');
+      if (deleteBtn) {
+        const id = parseInt(deleteBtn.dataset.id);
+        tasks = tasks.filter(t => t.id !== id);
+        save();
+        renderTasks();
+        // Clear schedule if tasks changed
+        schedule = [];
+        localStorage.removeItem('da_schedule');
+        renderSchedule();
+      }
+    });
+
+    generateBtn.addEventListener('click', function() {
+      if (tasks.length === 0) return;
+      generateSchedule();
+    });
+
+    clearBtn.addEventListener('click', function() {
+      if (tasks.length === 0 && schedule.length === 0) return;
+      tasks = [];
+      schedule = [];
+      save();
+      localStorage.removeItem('da_schedule');
+      renderTasks();
+      renderSchedule();
+    });
+
+    themeBtn.addEventListener('click', function() {
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      if (isLight) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('da_theme', 'dark');
+        themeBtn.innerHTML = '&#9790;';
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('da_theme', 'light');
+        themeBtn.innerHTML = '&#9728;';
+      }
+    });
+
+    exportBtn.addEventListener('click', exportSchedule);
+
+    // ── INTERACTION 3: DROPDOWN SELECTION (Priority) ──
+    // Handled by the <select> element, value read on form submit
+
+    // ── INTERACTION 4: KEYBOARD SHORTCUTS ──
+    document.addEventListener('keydown', function(e) {
+      // Ctrl+G to generate
+      if (e.ctrlKey && e.key === 'g') {
+        e.preventDefault();
+        if (tasks.length > 0) generateSchedule();
+      }
+      // Ctrl+E to export
+      if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        exportSchedule();
+      }
+    });
+
+    // ── INTERACTION 5: TIME INPUT CHANGE ──
+    startTimeInput.addEventListener('change', function() {
+      startTimeValue = startTimeInput.value;
+      localStorage.setItem('da_startTime', startTimeValue);
+      // Re-generate if schedule exists
+      if (schedule.length > 0) generateSchedule();
+    });
+
+    // ── SCHEDULE ALGORITHM ──
+    function generateSchedule() {
+      const priorityOrder = { high: 0, medium: 1, low: 2 };
+
+      // Sort: high priority first, then by duration (shorter first within same priority)
+      const sorted = [...tasks].sort((a, b) => {
+        if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+          return priorityOrder[a.priority] - priorityOrder[b.priority];
+        }
+        return a.duration - b.duration;
+      });
+
+      // Build time blocks
+      let [hours, mins] = startTimeValue.split(':').map(Number);
+      let currentMinutes = hours * 60 + mins;
+
+      schedule = sorted.map(task => {
+        const startMins = currentMinutes;
+        const endMins = currentMinutes + task.duration;
+        currentMinutes = endMins;
+
+        return {
+          ...task,
+          startTime: formatTime(startMins),
+          endTime: formatTime(endMins),
+          startMinutes: startMins,
+          endMinutes: endMins
+        };
+      });
+
+      localStorage.setItem('da_schedule', JSON.stringify(schedule));
+      renderSchedule();
+    }
+
+    function formatTime(totalMinutes) {
+      const h = Math.floor(totalMinutes / 60) % 24;
+      const m = totalMinutes % 60;
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h;
+      return displayH + ':' + String(m).padStart(2, '0') + ' ' + ampm;
+    }
+
+    // ── RENDER FUNCTIONS ──
+    function renderTasks() {
+      // Clear existing task items (but keep empty state)
+      const existingItems = taskList.querySelectorAll('.task-item');
+      existingItems.forEach(item => item.remove());
+
+      if (tasks.length === 0) {
+        emptyState.style.display = '';
+        taskCount.textContent = '0 tasks';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      const totalMin = tasks.reduce((sum, t) => sum + t.duration, 0);
+      const hrs = Math.floor(totalMin / 60);
+      const min = totalMin % 60;
+      const timeStr = hrs > 0 ? hrs + 'h ' + min + 'm' : min + 'm';
+      taskCount.textContent = tasks.length + (tasks.length === 1 ? ' task' : ' tasks') + ' \u00B7 ' + timeStr;
+
+      tasks.forEach(task => {
+        const el = document.createElement('div');
+        el.className = 'task-item';
+        el.innerHTML =
+          '<div class="priority-dot ' + task.priority + '"></div>' +
+          '<div class="task-info">' +
+            '<div class="task-name">' + escapeHTML(task.name) + '</div>' +
+            '<div class="task-meta">' + task.duration + ' min \u00B7 ' + task.priority + '</div>' +
+          '</div>' +
+          '<button class="task-delete" data-id="' + task.id + '" title="Remove task">\u00D7</button>';
+        taskList.appendChild(el);
+      });
+    }
+
+    function renderSchedule() {
+      // Clear existing time blocks
+      const existingBlocks = scheduleTimeline.querySelectorAll('.time-block');
+      existingBlocks.forEach(b => b.remove());
+
+      if (schedule.length === 0) {
+        scheduleEmpty.style.display = '';
+        scheduleStats.style.display = 'none';
+        return;
+      }
+
+      scheduleEmpty.style.display = 'none';
+      scheduleStats.style.display = '';
+
+      // Stats
+      totalTasksEl.textContent = schedule.length;
+      const totalMin = schedule.reduce((sum, s) => sum + s.duration, 0);
+      const hrs = Math.floor(totalMin / 60);
+      const min = totalMin % 60;
+      totalHoursEl.textContent = hrs > 0 ? hrs + 'h ' + min + 'm' : min + 'm';
+      endTimeEl.textContent = schedule[schedule.length - 1].endTime;
+
+      // Render blocks with staggered animation
+      schedule.forEach((block, i) => {
+        const el = document.createElement('div');
+        el.className = 'time-block';
+        el.style.animationDelay = (i * 0.06) + 's';
+        el.innerHTML =
+          '<div class="time-label">' + block.startTime + '</div>' +
+          '<div class="time-block-content ' + block.priority + '">' +
+            '<div class="block-name">' + escapeHTML(block.name) + '</div>' +
+            '<div class="block-duration">' + block.duration + ' min \u2192 ' + block.endTime + '</div>' +
+          '</div>';
+        scheduleTimeline.appendChild(el);
+      });
+    }
+
+    // ── EXPORT ──
+    function exportSchedule() {
+      if (schedule.length === 0) {
+        showToast('No schedule to export');
+        return;
+      }
+
+      let text = 'Schedule for today\n';
+      text += '='.repeat(30) + '\n\n';
+      schedule.forEach(block => {
+        text += block.startTime + ' - ' + block.endTime + '  |  ' + block.name + ' (' + block.priority + ', ' + block.duration + ' min)\n';
+      });
+      const totalMin = schedule.reduce((sum, s) => sum + s.duration, 0);
+      const hrs = Math.floor(totalMin / 60);
+      const min = totalMin % 60;
+      text += '\nTotal: ' + (hrs > 0 ? hrs + 'h ' + min + 'm' : min + 'm');
+      text += ' | Done by ' + schedule[schedule.length - 1].endTime;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Schedule copied to clipboard!');
+      }).catch(() => {
+        showToast('Could not copy to clipboard');
+      });
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    // ── HELPERS ──
+    function save() {
+      localStorage.setItem('da_tasks', JSON.stringify(tasks));
+    }
+
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
